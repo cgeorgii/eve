@@ -7,6 +7,7 @@
 {-# language TypeFamilies #-}
 {-# language UndecidableInstances #-}
 {-# language ScopedTypeVariables #-}
+
 module Eve.Internal.Actions
   ( AppF(..)
   , ActionT(..)
@@ -28,7 +29,6 @@ import Control.Monad.Trans.Free
 import Control.Lens
 import Data.Typeable
 import Data.Default
-import Data.Semigroup
 
 -- | An 'App' has the same base and zoomed values.
 type AppT s m a = ActionT s s m a

@@ -1,4 +1,5 @@
 {-# language TemplateHaskell #-}
+{-# language GADTs #-}
 module Eve.Internal.AppState
   ( AppState(..)
   , App
@@ -10,6 +11,8 @@ module Eve.Internal.AppState
   , isExiting
 
   , asyncQueue
+  , syncQueue
+  , SyncAction(..)
   ) where
 
 import Eve.Internal.Actions
@@ -18,6 +21,7 @@ import Control.Lens
 import Data.Default
 import Data.Typeable
 import Control.Concurrent.Chan
+import Control.Concurrent.MVar
 
 -- | A basic default state which underlies 'App' Contains only a map of 'States'.
 data AppState = AppState
@@ -44,6 +48,22 @@ instance Default (AsyncQueue base m) where
 -- | Accesses a queue for dispatching async actions.
 asyncQueue :: (HasStates s, Typeable m, Typeable base) => Lens' s (Maybe (Chan (AppT base m ())))
 asyncQueue = stateLens.asyncQueue'
+
+-- | A GADT wrapper for synchronous actions with result back-channels
+data SyncAction base m where
+  SyncAction :: Typeable a => AppT base m a -> MVar a -> SyncAction base m
+
+newtype SyncQueue base m = SyncQueue
+  { _syncQueue' :: Maybe (Chan (SyncAction base m))
+  } deriving Typeable
+makeLenses ''SyncQueue
+
+instance Default (SyncQueue base m) where
+  def = SyncQueue Nothing
+
+-- | Accesses a queue for dispatching synchronous actions with results.
+syncQueue :: (HasStates s, Typeable m, Typeable base) => Lens' s (Maybe (Chan (SyncAction base m)))
+syncQueue = stateLens.syncQueue'
 
 newtype Exiting =
   Exiting Bool

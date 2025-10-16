@@ -124,6 +124,7 @@ module Eve
 
   -- ** Async
   , asyncActionProvider
+  , syncActionProvider
 
   , dispatchEventAsync
   , dispatchActionAsync

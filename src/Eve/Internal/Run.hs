@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 module Eve.Internal.Run
   ( eve
   , eve_
@@ -6,7 +7,6 @@ module Eve.Internal.Run
 import Eve.Internal.Actions
 import Eve.Internal.Listeners
 import Eve.Internal.Events
-import Eve.Internal.States()
 import Eve.Internal.AppState
 
 import Control.Concurrent.Chan
@@ -20,14 +20,15 @@ import Data.Typeable
 -- It is polymorphic in the Monad it operates over, so you may use it with any
 -- custom base monad which implements 'MonadIO'. Upon termination of the app it
 -- returns the final 'AppState'.
-eve :: (MonadIO m, Typeable m) => AppT AppState m () -> m AppState
+eve :: forall m. (MonadIO m, Typeable m) => AppT AppState m () -> m AppState
 eve initialize = do
-  chan <- liftIO newChan
-  execEve (def & asyncQueue .~ Just chan) $ do
+  asyncChan <- liftIO newChan
+  syncChan <- liftIO (newChan :: IO (Chan (SyncAction AppState m)))
+  execEve (def & asyncQueue .~ Just asyncChan & syncQueue .~ Just syncChan) $ do
     initialize
     dispatchEvent_ Init
     dispatchEvent_ AfterInit
-    eventLoop chan
+    eventLoop asyncChan
     dispatchEvent_ Exit
 
 -- | This runs your application. It accepts an initialization block (which

@@ -40,6 +40,7 @@ test-suite eve-test
   other-modules:       Fixtures
                      , EveSpec
                      , Eve.Internal.AsyncSpec
+                     , Eve.Internal.SyncActionSpec
                      , Eve.Internal.ActionsSpec
                      , Eve.Internal.StatesSpec
                      , Eve.Internal.EventsSpec

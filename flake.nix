@@ -25,6 +25,7 @@
           packages = p: [ eve ];
           buildInputs = with haskellPackages; [
             cabal-install
+            ghcid
             haskell-language-server
           ];
           withHoogle = true;
